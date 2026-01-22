@@ -1,6 +1,6 @@
 # Getting started
 * Download and install VS Code, if not installed yet
-  * Run \[TO BE ADDED\] in Windows or \[TO BE ADDED\] in Linux
+  * Run vsc_setup_windows.bat in Windows or vsc_setup_linux.sh in Linux
 
 # Plan
 * Implement/simulate a simple FIFO memory in different languages: Python, C, C++, SystemC, SystemVerilog.
