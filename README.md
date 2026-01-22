@@ -2,6 +2,9 @@
 * Download and install VS Code, if not installed yet
   * Run vsc_setup_windows.bat in Windows or vsc_setup_linux.sh in Linux
 
+## Versions
+* Python: 3.12.12
+
 # Plan
 * Implement/simulate a simple FIFO memory in different languages: Python, C, C++, SystemC, SystemVerilog.
 * Test each implementation with the same rules (ideally, the same test case script)
@@ -11,8 +14,8 @@
 # Rules for the FIFO memory
 
 ### Parameters
-* DEPTH = 128
-* WORDLEN = 32
+* DEPTH = 8
+* WLEN = 32
 
 ### Reset values
 * pos_rd = 0
