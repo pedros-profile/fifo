@@ -2,8 +2,12 @@
 import unittest
 import random
 
+# Toggle reference model usage
+APPLY_REF = True
+
 # Project imports
 from fifo import Fifo, DEPTH, WLEN
+from fifo_reference_model import FifoRef
 
 # Project constants
 MIN_VALUE = - 2 ** (WLEN - 1)
@@ -12,7 +16,7 @@ MAX_VALUE = 2 ** (WLEN - 1) - 1
 
 class TestFifoPython(unittest.TestCase):
     def setUp(self):
-        self.dut = Fifo()
+        self.dut = FifoRef() if APPLY_REF else Fifo()
 
     def test_read_back(self):
         """Write and read back one value a time. Assert read values match."""
