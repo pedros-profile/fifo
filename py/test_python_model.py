@@ -28,7 +28,6 @@ class TestFifoPython(unittest.TestCase):
         with self.assertRaises(BufferError):
             self.dut.write(100)
 
-    # TODO: add a under/overflow combined test
     def test_underflow(self):
         # test startup underflow
         with self.assertRaises(BufferError):
@@ -43,6 +42,37 @@ class TestFifoPython(unittest.TestCase):
         # test runtime underflow
         with self.assertRaises(BufferError):
             self.dut.read()
+
+    def test_under_and_overflow(self):
+        """Test a full cycle of filling and emptying the FIFO twice."""
+        for _ in range(2):
+            rnd_values = [random.randint(MIN_VALUE, MAX_VALUE) for _ in range(DEPTH + 3)]
+            expetced_values = rnd_values[:DEPTH]
+            # Write up to one less than full
+            for val in expetced_values[:-1]:
+                self.dut.write(val)
+                self.assertFalse(self.dut.is_empty)
+                self.assertFalse(self.dut.is_full)
+            # Insert last value to fill FIFO
+            self.dut.write(expetced_values[-1])
+            self.assertFalse(self.dut.is_empty)
+            self.assertTrue(self.dut.is_full)
+            # Read back all expected values but one
+            for val in expetced_values[:-1]:
+                val_dut = self.dut.read()
+                self.assertTrue(val == val_dut)
+                self.assertFalse(self.dut.is_empty)
+                self.assertFalse(self.dut.is_full)
+            # Read last expected value, emptying FIFO
+            val_dut = self.dut.read()
+            self.assertTrue(expetced_values[-1] == val_dut)
+            self.assertTrue(self.dut.is_empty)
+            self.assertFalse(self.dut.is_full)
+            # Test underflow
+            with self.assertRaises(BufferError):
+                self.dut.read()
+            self.assertTrue(self.dut.is_empty)
+            self.assertFalse(self.dut.is_full)
 
     def test_value_bounds(self):
         with self.assertRaises(ValueError):
