@@ -19,21 +19,25 @@ class Fifo:
         self.__mem = [0 for _ in range(DEPTH)]
         self.__ptr_rd = 0
         self.__ptr_wr = 0
+        self.is_empty = True
 
-    def write(self, val) -> int:
+    def write(self, val):
         """Insert a new value to FIFO. Raise an error if val is out of bounds or if there's no room for new entries."""
         self._assert_wr(val)       # Check input value and available space
         self.__mem[self.__ptr_wr] = int(val)
         self.__ptr_wr += 1
         self.__ptr_wr %= DEPTH
-        return self.__ptr_wr - self.__ptr_rd
+        self.is_empty = False
 
     def read(self) -> int:
         """Get the oldest entry in the queue. Raise an error if empty."""
-        self._assert_rd()       # Check for available data
+        if self.is_empty:
+            raise BufferError("FIFO is empty.")
         val = self.__mem[self.__ptr_rd]
         self.__ptr_rd += 1
         self.__ptr_rd %= DEPTH
+        if self.__ptr_rd == self.__ptr_wr:
+            self.is_empty = True
         return val
 
     # ---------- #
@@ -41,22 +45,22 @@ class Fifo:
     # ---------- #
 
     @property
+    def queue_len(self):
+        q_len = (self.__ptr_wr - self.__ptr_rd) % DEPTH
+        if self.q_len == 0:
+            return 0 if self.is_empty else DEPTH
+        return q_len
+
+    @property
     def queue(self) -> int:
         """Get total of entries currently in the FIFO."""
         mem_cp = self.__mem[self.__ptr_rd:] + self.__mem[:self.__ptr_rd]
-        return tuple(*mem_cp[:self.queue_len])
+        return tuple(mem_cp[:self.queue_len])
 
     @property
-    def ptr_rd(self):
-        return self.__ptr_rd
-
-    @property
-    def ptr_wr(self):
-        return self.__ptr_wr
-
-    @property
-    def queue_len(self):
-        return (self.__ptr_wr - self.__ptr_rd + DEPTH) % DEPTH
+    def is_full(self) -> bool:
+        """Check if FIFO is full."""
+        return not self.is_empty and self.queue_len == DEPTH
 
     # --------------- #
     # PRIVATE METHODS #
@@ -67,12 +71,8 @@ class Fifo:
             raise ValueError(f"Value inserted out of bounds: |{val}| > {2**WLEN -1}")
         if val % 1:
             raise ValueError(f"Value inserted is not an integer: {val}")
-        if self.queue_len == DEPTH:
+        if self.is_full:
             raise BufferError(f"FIFO is full. ({DEPTH} words)")
-
-    def _assert_rd(self):
-        if self.__ptr_rd == self.__ptr_wr:
-            raise BufferError("No new values to FIFO yet.")
 
 if __name__ == "__main__":
     print("Python version of FIFO")
