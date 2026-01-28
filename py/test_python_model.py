@@ -16,19 +16,20 @@ class TestFifoPython(unittest.TestCase):
 
     def test_read_back(self):
         """Write and read back one value a time. Assert read values match."""
-        values = [random.randint(MIN_VALUE, MAX_VALUE) for _ in range(20)]
-        for val in values:
+        for _ in range(DEPTH + 2):
+            val = random.randint(MIN_VALUE, MAX_VALUE)
             self.dut.write(val)
-            val_dut = self.dut.read()
-            self.assertTrue(val == val_dut, msg="Value #{idx}: {val}")
+            self.assertTrue(val == self.dut.read())
 
     def test_overflow(self):
+        """Check if overflow raises BufferError."""
         for idx in range(DEPTH):
             self.dut.write(idx)
         with self.assertRaises(BufferError):
             self.dut.write(100)
 
     def test_underflow(self):
+        """Check if underflow raises BufferError at startup and runtime."""
         # test startup underflow
         with self.assertRaises(BufferError):
             self.dut.read()
@@ -75,6 +76,7 @@ class TestFifoPython(unittest.TestCase):
             self.assertFalse(self.dut.is_full)
 
     def test_value_bounds(self):
+        """Test that values written respect bounds and format."""
         with self.assertRaises(ValueError):
             self.dut.write(MIN_VALUE - 1)
         with self.assertRaises(ValueError):
