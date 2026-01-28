@@ -21,6 +21,14 @@ class TestFifoPython(unittest.TestCase):
             self.dut.write(val)
             self.assertTrue(val == self.dut.read())
 
+    def test_read_back_constant(self):
+        """Write a bulk of values, then read them all back. Assert read values match."""
+        values = [-3, 4, 0, -90, -120, 45, 2, -7][:DEPTH]
+        for val in values:
+            self.dut.write(val)
+        for val in values:
+            self.assertTrue(self.dut.read() == val)
+
     def test_overflow(self):
         """Check if overflow raises BufferError."""
         for idx in range(DEPTH):
