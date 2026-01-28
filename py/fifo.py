@@ -9,7 +9,7 @@ BOUND_HI = 2 ** (WLEN - 1) - 1
 
 class Fifo:
     """FIFO class."""
-    __slots__ = "__mem", "__ptr_rd", "__ptr_wr"
+    __slots__ = "__mem", "__ptr_rd", "__ptr_wr", "is_empty"
 
     # ------------- #
     # BASIC METHODS #
@@ -47,7 +47,7 @@ class Fifo:
     @property
     def queue_len(self):
         q_len = (self.__ptr_wr - self.__ptr_rd) % DEPTH
-        if self.q_len == 0:
+        if q_len == 0:
             return 0 if self.is_empty else DEPTH
         return q_len
 

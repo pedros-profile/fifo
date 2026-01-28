@@ -22,7 +22,6 @@ class TestFifoPython(unittest.TestCase):
             val_dut = self.dut.read()
             self.assertTrue(val == val_dut, msg="Value #{idx}: {val}")
 
-    # FIXME: empty/full flags are needed
     def test_overflow(self):
         for idx in range(DEPTH):
             self.dut.write(idx)
