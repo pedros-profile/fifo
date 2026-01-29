@@ -1,3 +1,9 @@
+"""General functionality testing of FIFO.
+
+This implementation fits both FIFO Python versions; FifoRef and Fifo.
+To be used as a template for the other implementations.
+"""
+
 # Standard library imports
 import unittest
 import random

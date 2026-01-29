@@ -1,4 +1,4 @@
-"""Python version of FIFO implementation."""
+"""Python version of FIFO implementation. It is a preview of what the C code should look like."""
 # Design parameters
 DEPTH = 8
 WLEN = 32
@@ -8,7 +8,7 @@ BOUND_HI = 2 ** (WLEN - 1) - 1
 
 
 class Fifo:
-    """FIFO class."""
+    """FIFO class. Slotted class, for gaining performance and fidelity of implementation."""
     __slots__ = "__mem", "__ptr_rd", "__ptr_wr", "is_empty"
 
     # ------------- #
@@ -22,7 +22,7 @@ class Fifo:
         self.is_empty = True
 
     def write(self, val):
-        """Insert a new value to FIFO. Raise an error if val is out of bounds or if there's no room for new entries."""
+        """Insert a new value. Raise an error if not possible."""
         self._assert_wr(val)       # Check input value and available space
         self.__mem[self.__ptr_wr] = int(val)
         self.__ptr_wr += 1
@@ -46,6 +46,7 @@ class Fifo:
 
     @property
     def queue_len(self):
+        """Get the number of elements queued."""
         q_len = (self.__ptr_wr - self.__ptr_rd) % DEPTH
         if q_len == 0:
             return 0 if self.is_empty else DEPTH
@@ -53,7 +54,7 @@ class Fifo:
 
     @property
     def queue(self) -> int:
-        """Get total of entries currently in the FIFO."""
+        """Get FIFO's queue, oldest-to-newest."""
         mem_cp = self.__mem[self.__ptr_rd:] + self.__mem[:self.__ptr_rd]
         return tuple(mem_cp[:self.queue_len])
 
@@ -67,6 +68,7 @@ class Fifo:
     # --------------- #
 
     def _assert_wr(self, val):
+        """Raise an error if the value to be written is invalid."""
         if not (BOUND_LO <= val <= BOUND_HI):
             raise ValueError(f"Value inserted out of bounds: |{val}| > {2**WLEN -1}")
         if val % 1:

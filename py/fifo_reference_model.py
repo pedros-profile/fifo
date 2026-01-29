@@ -2,6 +2,8 @@ MIN_VALUE = - 2 ** 31
 MAX_VALUE = 2 ** 31 - 1
 
 class FifoRef:
+    """High-level model of a FIFO. It simulates depth, empty/full flags and data format constraints."""
+
     def __init__(self, depth=8):
         self.depth = depth
         self.queue = []
