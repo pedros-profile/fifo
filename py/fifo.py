@@ -61,7 +61,7 @@ class Fifo:
     @property
     def is_full(self) -> bool:
         """Check if FIFO is full."""
-        return not self.is_empty and self.queue_len == DEPTH
+        return not self.is_empty and (self.__ptr_rd == self.__ptr_wr)
 
     # --------------- #
     # PRIVATE METHODS #
