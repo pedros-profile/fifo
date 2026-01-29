@@ -1,13 +1,5 @@
 #include <stdio.h>
-
-#define DEPTH 8
-// WLEN is not necessary here
-
-typedef struct {
-    int ptr_rd;
-    int ptr_wr;
-    long internal_mem[DEPTH];
-} fifo_t;
+#include "fifo.h"
 
 // Get current length of fifo
 int get_queue_len(fifo_t* fifo) {
