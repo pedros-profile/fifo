@@ -9,3 +9,8 @@ powershell -NoProfile -Command "Invoke-WebRequest -Uri '%URL%' -OutFile %FILE%"
 
 echo Installing VS Code...
 "%FILE%" & :: /silent
+
+:: Install C/C++ extension
+:: Make sure VS Code is installed and 'code' command is available in PATH
+echo Installing C/C++ extension...
+code --install-extension ms-vscode.cpptools
