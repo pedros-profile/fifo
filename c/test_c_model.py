@@ -28,8 +28,8 @@ MAX_VALUE = 2 ** (WLEN - 1) - 1
 
 class TestFifoPython(unittest.TestCase):
     def setUp(self):
-        self.dut = lib.create_fifo()
-        self.dut_ptr = ffi.addressof(self.dut)
+        self.dut_ptr = ffi.new("fifo_t*")
+        lib.init_fifo(self.dut_ptr)
 
     def test_read_back(self):
         """Write and read back one value a time. Assert read values match."""
