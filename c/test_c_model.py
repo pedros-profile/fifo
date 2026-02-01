@@ -12,19 +12,16 @@ import time
 
 # Setup CFFI to load C FIFO implementation
 # This will compile the C code and load the resulting DLL
-from cffi_load import ffi, lib
-
-# Clean CLI
-time.sleep(3)   # Give some time for the user to read any compilation errors
-os.system("cls" if os.name == "nt" else "clear")
+import cffi_load
+ffi, lib = cffi_load.cffi_load()
+# ffi, lib = cffi_load.compile_ffi()
 
 # Project constants
 DEPTH = lib.DEPTH
-WLEN = 32
+WLEN = 32   # long
 MIN_VALUE = - 2 ** (WLEN - 1)
 MAX_VALUE = 2 ** (WLEN - 1) - 1
 
-# TODO: create a ERR component in C code to avoid using -1 as error code?
 
 class TestFifoPython(unittest.TestCase):
     def setUp(self):
@@ -33,99 +30,114 @@ class TestFifoPython(unittest.TestCase):
 
     def test_read_back(self):
         """Write and read back one value a time. Assert read values match."""
+        dut_val = ffi.new("long*")
         for _ in range(DEPTH + 2):
             val = random.randint(MIN_VALUE, MAX_VALUE)
             lib.write(self.dut_ptr, val)
-            dut_val = lib.read(self.dut_ptr)
-            self.assertEqual(dut_val, val)
+            lib.read(self.dut_ptr, dut_val)
+            self.assertEqual(dut_val[0], val)
 
     def test_read_back_constant(self):
         """Write a bulk of values, then read them all back. Assert read values match."""
-        values = [*range(DEPTH)]
+        dut_val = ffi.new("long*")
+        values = [*range(DEPTH - 1)]
         for val in values:
-            dut_res = lib.write(self.dut_ptr, val)
-            self.assertNotEqual(dut_res, -1, msg=f"Failed to write value {val}.")
+            stat = lib.write(self.dut_ptr, val)
+            self.assertEqual(stat, lib.PARTIAL, msg=f"Failed to write value {val}.")
         for idx, val in enumerate(values):
-            dut_val = lib.read(self.dut_ptr)
-            self.assertEqual(dut_val, val, msg=f"Read value mismatch at entry #{idx}.")
+            stat = lib.read(self.dut_ptr, dut_val)
+            self.assertEqual(int(dut_val[0]), val, msg=f"Read value mismatch at entry #{idx}.")
 
     def test_overflow(self):
         """Check if overflow raises BufferError."""
-        for idx in range(DEPTH):
-            dut_res = lib.write(self.dut_ptr, idx)
-            self.assertNotEqual(dut_res, -1, msg=f"Failed to write at position {idx}.")
-        dut_res = lib.write(self.dut_ptr, 100)
-        self.assertEqual(dut_res, -1)
+        # Almost fill up FIFO
+        for idx in range(DEPTH - 1):
+            stat = lib.write(self.dut_ptr, idx)
+            self.assertEqual(stat, lib.PARTIAL, msg=f"Failed to write at position {idx}.")
+        # Make it full
+        stat = lib.write(self.dut_ptr, 100)
+        self.assertEqual(self.dut_ptr.status, lib.FULL)
+        self.assertEqual(stat, lib.FULL)
+        # Make it overflow
+        stat = lib.write(self.dut_ptr, 101)
+        self.assertEqual(self.dut_ptr.status, lib.FULL)
+        self.assertEqual(stat, lib.OVERFLOW)
 
     def test_underflow(self):
         """Check if underflow raises BufferError at startup and runtime."""
         # test startup underflow
-        dut_res = lib.read(self.dut_ptr)
-        self.assertEqual(dut_res, -1)
-        # write some random values without overflowing it
+        dut_val = ffi.new("long*")
+        dut_val[0] = -117
+        stat = lib.read(self.dut_ptr, dut_val)
+        self.assertEqual(stat, lib.UNDERFLOW)   # checks if underflow is raised
+        self.assertEqual(dut_val[0], -117)      # checks if pointed value remains
+        # write some random values (but not fill up)
         values = [random.randint(MIN_VALUE, MAX_VALUE) for _ in range(random.randint(1, DEPTH - 1))]
         for val in values:
-            dut_res = lib.write(self.dut_ptr, val)
-            self.assertNotEqual(dut_res, -1)
+            stat = lib.write(self.dut_ptr, val)
+            self.assertEqual(stat, lib.PARTIAL)
         # read them all back
         for _ in values:
-            lib.read(self.dut_ptr)
+            stat = lib.read(self.dut_ptr, dut_val)
+            self.assertNotEqual(stat, lib.UNDERFLOW)
         # test runtime underflow
-        dut_val = lib.read(self.dut_ptr)
-        self.assertEqual(dut_val, -1)
+        prev_val = dut_val[0]                   # store the previously pointed value
+        stat = lib.read(self.dut_ptr, dut_val)
+        self.assertEqual(stat, lib.UNDERFLOW)
+        self.assertEqual(prev_val, dut_val[0])  # previous value remains?
 
-    # TODO: add is_empty and is_full to C model
     def test_under_and_overflow(self):
         """Test a full cycle of filling and emptying the FIFO twice."""
+        dut_val = ffi.new("long*")
         for _ in range(2):
+            # Prepare values to be written/read
             rnd_values = [random.randint(MIN_VALUE, MAX_VALUE) for _ in range(DEPTH + 3)]
             rnd_values[DEPTH] = 123     # Make sure this one isn't -1
             expetced_values = rnd_values[:DEPTH]
+            self.assertEqual(self.dut_ptr.status, lib.EMPTY)
             # Write up to one less than full
             for val in expetced_values[:-1]:
-                dut_res = lib.write(self.dut_ptr, val)
-                self.assertNotEqual(dut_res, -1)
-                # self.assertFalse(self.dut.is_empty)
-                # self.assertFalse(self.dut.is_full)
+                stat = lib.write(self.dut_ptr, val)
+                self.assertEqual(stat, lib.PARTIAL)
+                self.assertEqual(self.dut_ptr.status, lib.PARTIAL)
             # Insert last value to fill FIFO
-            dut_res = lib.write(self.dut_ptr, expetced_values[-1])
-            self.assertNotEqual(dut_res, -1)
-            # self.assertFalse(self.dut.is_empty)
-            # self.assertTrue(self.dut.is_full)
+            stat = lib.write(self.dut_ptr, expetced_values[-1])
+            self.assertEqual(stat, lib.FULL)
+            self.assertEqual(self.dut_ptr.status, lib.FULL)
             # Read back all expected values but one
             for val in expetced_values[:-1]:
-                val_dut = lib.read(self.dut_ptr)
-                self.assertEqual(val_dut, val)
-                # self.assertFalse(self.dut.is_empty)
-                # self.assertFalse(self.dut.is_full)
+                stat = lib.read(self.dut_ptr, dut_val)
+                self.assertEqual(stat, lib.PARTIAL)
+                self.assertEqual(self.dut_ptr.status, lib.PARTIAL)
+                self.assertEqual(dut_val[0], val)
             # Read last expected value, emptying FIFO
-            val_dut = lib.read(self.dut_ptr)
-            self.assertEqual(val_dut, expetced_values[-1])
-            # self.assertTrue(self.dut.is_empty)
-            # self.assertFalse(self.dut.is_full)
+            stat = lib.read(self.dut_ptr, dut_val)
+            self.assertEqual(stat, lib.EMPTY)
+            self.assertEqual(self.dut_ptr.status, lib.EMPTY)
+            self.assertEqual(dut_val[0], expetced_values[-1])
             # Test underflow
-            dut_res = lib.read(self.dut_ptr)
-            self.assertEqual(dut_res, -1)
-            # self.assertTrue(self.dut.is_empty)
-            # self.assertFalse(self.dut.is_full)
+            stat = lib.read(self.dut_ptr, dut_val)
+            self.assertEqual(stat, lib.UNDERFLOW)
+            self.assertAlmostEqual(self.dut_ptr.status, lib.EMPTY)  # DUT is flagging EMPTY
+            self.assertEqual(dut_val[0], expetced_values[-1])       # ptr unchanged?
 
     def test_value_bounds(self):
         """Test that values written respect bounds and format."""
         # Lower than minimum
         with self.assertRaises(OverflowError):
-            dut_res = lib.write(self.dut_ptr, MIN_VALUE - 1)
+            stat = lib.write(self.dut_ptr, MIN_VALUE - 1)
         # Higher than maximum
         with self.assertRaises(OverflowError):
-            dut_res = lib.write(self.dut_ptr, MAX_VALUE + 1)
+            stat = lib.write(self.dut_ptr, MAX_VALUE + 1)
         # Non-integer value
         with self.assertRaises(TypeError):
             lib.write(self.dut_ptr, 3.14)
         # Valid: lower bound
-        dut_res = lib.write(self.dut_ptr, MIN_VALUE)
-        self.assertNotEqual(dut_res, -1)
+        stat = lib.write(self.dut_ptr, MIN_VALUE)
+        self.assertEqual(stat, lib.PARTIAL)
         # Valid: upper bound
-        dut_res = lib.write(self.dut_ptr, MAX_VALUE)
-        self.assertNotEqual(dut_res, -1)
+        stat = lib.write(self.dut_ptr, MAX_VALUE)
+        self.assertEqual(stat, lib.PARTIAL)
 
 if __name__ == "__main__":
     unittest.main(verbosity=0)
