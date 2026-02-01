@@ -7,7 +7,7 @@ pushd %LOCAL_DIR%
     set CC=gcc
 
     :: === Flags for CFFI + debugging ===
-    set CFLAGS=-std=c11 -g -O0 -Wall -Wextra
+    set CFLAGS=-std=c17 -g -O0 -Wall -Wextra
     set LDFLAGS=-shared
 
     :: === Files ===

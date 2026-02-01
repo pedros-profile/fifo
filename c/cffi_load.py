@@ -25,3 +25,6 @@ def cffi_load():
     lib = ffi.dlopen(str(DLL_FILE))
 
     return ffi, lib
+
+if __name__ == "__main__":
+    compile_ffi()
