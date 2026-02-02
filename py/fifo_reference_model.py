@@ -16,7 +16,7 @@ class FifoRef:
         self._queue.append(value)
 
     def read(self):
-        if len(self._queue) == 0:
+        if self.is_empty:
             raise BufferError("FIFO is empty")
         return self._queue.pop(0)
 
