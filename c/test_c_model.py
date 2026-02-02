@@ -5,10 +5,8 @@ To be used as a template for the other implementations.
 """
 
 # Standard library imports
-import os
 import unittest
 import random
-import time
 
 # Setup CFFI to load C FIFO implementation
 # This will compile the C code and load the resulting DLL
@@ -86,26 +84,30 @@ class TestFifoPython(unittest.TestCase):
         self.assertEqual(stat, lib.UNDERFLOW)
         self.assertEqual(prev_val, dut_val[0])  # previous value remains?
 
-    def test_under_and_overflow(self):
+    def test_under_and_overflow_cycle(self):
         """Test a full cycle of filling and emptying the FIFO twice."""
         dut_val = ffi.new("long*")
         for _ in range(2):
             # Prepare values to be written/read
-            rnd_values = [random.randint(MIN_VALUE, MAX_VALUE) for _ in range(DEPTH + 3)]
-            rnd_values[DEPTH] = 123     # Make sure this one isn't -1
-            expetced_values = rnd_values[:DEPTH]
+            expected_values = [random.randint(MIN_VALUE, MAX_VALUE) for _ in range(DEPTH)]
+            excess_values = [random.randint(MIN_VALUE, MAX_VALUE) for _ in range(DEPTH // 4)]
             self.assertEqual(self.dut_ptr.status, lib.EMPTY)
             # Write up to one less than full
-            for val in expetced_values[:-1]:
+            for val in expected_values[:-1]:
                 stat = lib.write(self.dut_ptr, val)
                 self.assertEqual(stat, lib.PARTIAL)
                 self.assertEqual(self.dut_ptr.status, lib.PARTIAL)
             # Insert last value to fill FIFO
-            stat = lib.write(self.dut_ptr, expetced_values[-1])
+            stat = lib.write(self.dut_ptr, expected_values[-1])
             self.assertEqual(stat, lib.FULL)
             self.assertEqual(self.dut_ptr.status, lib.FULL)
+            # Get overflow error
+            for val in excess_values:
+                stat = lib.write(self.dut_ptr, val)
+                self.assertEqual(stat, lib.OVERFLOW)
+                self.assertEqual(self.dut_ptr.status, lib.FULL)
             # Read back all expected values but one
-            for val in expetced_values[:-1]:
+            for val in expected_values[:-1]:
                 stat = lib.read(self.dut_ptr, dut_val)
                 self.assertEqual(stat, lib.PARTIAL)
                 self.assertEqual(self.dut_ptr.status, lib.PARTIAL)
@@ -114,12 +116,13 @@ class TestFifoPython(unittest.TestCase):
             stat = lib.read(self.dut_ptr, dut_val)
             self.assertEqual(stat, lib.EMPTY)
             self.assertEqual(self.dut_ptr.status, lib.EMPTY)
-            self.assertEqual(dut_val[0], expetced_values[-1])
+            self.assertEqual(dut_val[0], expected_values[-1])
             # Test underflow
-            stat = lib.read(self.dut_ptr, dut_val)
-            self.assertEqual(stat, lib.UNDERFLOW)
-            self.assertAlmostEqual(self.dut_ptr.status, lib.EMPTY)  # DUT is flagging EMPTY
-            self.assertEqual(dut_val[0], expetced_values[-1])       # ptr unchanged?
+            for _ in excess_values:
+                stat = lib.read(self.dut_ptr, dut_val)
+                self.assertEqual(stat, lib.UNDERFLOW)
+                self.assertAlmostEqual(self.dut_ptr.status, lib.EMPTY)  # DUT is flagging EMPTY
+                self.assertEqual(dut_val[0], expected_values[-1])       # ptr unchanged?
 
     def test_value_bounds(self):
         """Test that values written respect bounds and format."""

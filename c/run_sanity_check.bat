@@ -6,3 +6,4 @@ pushd %ROOT_DIR%
   gcc -O2 -Wall -o c/bin/fifo.exe c/fifo.c c/fifo.h
   .\c\bin\fifo.exe
 popd
+endlocal
