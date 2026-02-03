@@ -2,3 +2,9 @@
 .vscode
 *swp
 **/bin
+**/*.exe
+**/*.dll
+**/*.o
+**/*.obj
+**/*.log
+**/*.out
