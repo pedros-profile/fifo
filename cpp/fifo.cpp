@@ -35,7 +35,3 @@ fifo_status_t Fifo::write(long val) {
     }
     return status;
 }
-
-
-/*
-*/
