@@ -1,55 +1,110 @@
-# Considerations
-### Platform
-This repository is run on Windows. Adaptions must be done for executing it on Linux.
-
-### Clone
-When cloning this repository, also download its third-party submodules with:
-`git clone --recurse-submodules https://github.com/pedros-profile/fifo.git`
-
-#### Third-party submodule repositories
-* [Google Test](https://github.com/google/googletest)
-* [SystemC](https://github.com/accellera-official/systemc)
-
-
-# Getting started
-* (OPTIONAL) Download and install VS Code, if not installed yet
-  * Run vsc_setup_windows.bat in Windows or vsc_setup_linux.sh in Linux
-* (RECOMMENDED) install Miniconda3
-  * Pick Python version 3.12.12
-* [Python] Install required packages
-  * `cd py/; pip install -r requirements.txt`
-* [C/C++] Install MinGW
-
-## Versions
-* Python: 3.12.12
-* C: C17
-* C++: C++17
-
 # Plan
-* Implement a simple FIFO memory in different languages:
+This repository has strict educational purposes.
+The goal here is to document the basic steps when setting up a cross-platform project from scratch in a Linux environment. The planned steps are:
+
+1. Implement a simple FIFO memory in different languages:
   * Python (DONE)
   * C (DONE)
   * C++ (DONE)
   * SystemC (prep...)
   * SystemVerilog
-* Test each implementation with the same rules (ideally, the same test case script)
-* Check for performance, when applicable.
-* If possible, add a jenkins/gitlab file.
+2. Test each implementation with the same rules (ideally, the same test case script)
+3. Check for performance, when applicable.
+4. If possible, add a jenkins/gitlab file.
 
-# Rules for the FIFO memory
+## To-do list
+* Convert shell scripts to a Make-based solution.
+* Integrate such solution with VSCode through `.vscode/` files.
 
-## Parameters
+# Getting started
+
+## Basic local installations
+
+### GIT
+`sudo apt-get git`
+
+### Visual Code
+```
+# download
+
+wget https://go.microsoft.com/fwlink/?LinkID=760868 -O ~/Downloads/code_latest_amd64.deb
+
+# install (accept the automatic activation)
+sudo apt install ~/Downloads/code_latest_amd64.deb`
+```
+
+### C/C++ compilers
+GCC and G++ already installed in Debian by default.
+
+### CMake
+`sudo apt-get install cmake`
+
+### Make
+Make in Debian by default
+
+
+### Miniconda3
+```
+# download installation script
+INST_SCRIPT="~/Downloads/Miniconda3-latest-Linux-x86_64.sh"
+wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O $INST_SCRIPT
+
+# run install script (with Python 3.12.12)
+bash $INST_SCRIPT
+conda create fifo_venv python=3.12.12
+```
+
+## Clone from GitHub
+First make sure you have a way of authenticating from GitHub. Below, the command to clone this repo with an SSH key.
+`git clone --recurse-submodules git@github.com:pedros-profile/fifo.git`
+
+### Install required packages
+```
+conda activate fifo_venv
+pip install -r ./fifo/py/requirements.txt
+```
+
+### Third-party submodule repositories
+* [Google Test](https://github.com/google/googletest)
+* [SystemC (at tag 3.0.2)](https://github.com/accellera-official/systemc)
+
+## Rules for the FIFO memory
+
+### Parameters
 Each implementation is parameterizable, with default values:
 * DEPTH = 8
 * WLEN = 32
 
-## Out of scope
+### Out of scope
 * Multi-threading
 * Different clock domains
 * Read/write operations taking more than one clock cycle to be performed
 
-# SW Tools
+## SW Versions
+* Python: 3.12.12
+* C: C17
+* C++: C++17
+* SystemC: 3.0.2
+* Debian 14.2.0-19
 * VS Code 1.108.1
 * conda 25.11.1
 * MinGW-W64 13.2.0
-* CMake 3.27.1
+* Make 4.4.1
+* CMake 3.31.6
+
+# Execution
+All commands here are assumed to be executed from the repo's root.
+
+## Python
+`python ./py/test_python_model.py`
+
+## C
+Sanity check: run `bash ./c/run_sanity_check.sh`
+
+For full test, run `bash ./c/build_so.sh` for compiling the C code, then test it with, `python ./c/test_c_model.py`
+
+## C++
+Execute GoogleTest on the C++ model with `bash ./cpp/run_gtest.sh`
+
+## SystemC
+TDB.

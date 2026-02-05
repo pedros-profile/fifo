@@ -9,10 +9,8 @@ import unittest
 import random
 
 # Setup CFFI to load C FIFO implementation
-# This will compile the C code and load the resulting DLL
 import cffi_load
-ffi, lib = cffi_load.cffi_load()
-# ffi, lib = cffi_load.compile_ffi()
+ffi, lib = cffi_load.cffi_load(compile=False)
 
 # Project constants
 DEPTH = lib.DEPTH
