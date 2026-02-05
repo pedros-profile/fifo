@@ -11,19 +11,19 @@ def compile_ffi():
     sys_exit_code = os.system("bash " + str(BATCH_FILE))
     return sys_exit_code
 
-def cffi_load(compile: bool = False, screen_time: float = 1.0):
-    if compile:
+def cffi_load(compile: bool = False, screen_time: float = 3.0):
+    # Get paths to CDEF and SO files
+    CDEF_FILE = Path(__file__).parent / "fifo.h"
+    SO_FILE = Path(__file__).parent / "bin/fifo.so"
+    SO_FILE = SO_FILE.resolve()  # Resolve to absolute path
+
+    if compile or not SO_FILE.is_file():
         print("Compiling C code...")
         sys_exit_code = compile_ffi()
         if sys_exit_code != 0:
             print(f"Compilation failed with exit code {sys_exit_code}.")
             exit()
         time.sleep(screen_time)  # Allow time to read compilation output
-
-    # Get paths to CDEF and SO files
-    CDEF_FILE = Path(__file__).parent / "fifo.h"
-    SO_FILE = Path(__file__).parent / "bin/fifo.so"
-    SO_FILE = SO_FILE.resolve()  # Resolve to absolute path
 
     # Load C definitions and SO using CFFI
     ffi = cffi.FFI()

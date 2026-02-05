@@ -5,8 +5,11 @@ To be used as a template for the other implementations.
 """
 
 # Standard library imports
+from ast import arg
+import sys
 import unittest
 import random
+import argparse
 
 # Setup CFFI to load C FIFO implementation
 import cffi_load
@@ -141,4 +144,13 @@ class TestFifoPython(unittest.TestCase):
         self.assertEqual(stat, lib.PARTIAL)
 
 if __name__ == "__main__":
-    unittest.main(verbosity=0)
+    arg_parser = argparse.ArgumentParser(description="Run FIFO C model tests.")
+    arg_parser.add_argument("--verbosity", "-v", default=0, type=int,
+                     help="Set unittest verbosity level (default: 0).")
+    arg_parser.add_argument("--compile", action="store_true", default=False,
+                     help="Compile the C code before running tests.")
+    args = arg_parser.parse_args()
+
+    if args.compile:
+        ffi, lib = cffi_load.cffi_load(compile=True)
+    unittest.main(argv=[sys.argv[0]], verbosity=args.verbosity)
