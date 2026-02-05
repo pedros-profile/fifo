@@ -99,12 +99,20 @@ All commands here are assumed to be executed from the repo's root.
 `python ./py/test_python_model.py`
 
 ## C
-Sanity check: run `bash ./c/run_sanity_check.sh`
+#### Sanity check:
 
-For full test, run `bash ./c/build_so.sh` for compiling the C code, then test it with, `python ./c/test_c_model.py`
+`bash ./c/run_sanity_check.sh`
+
+#### Default test:
+
+`python ./c/test_c_model.py`
+
+#### Test forcing a new compilation
+
+`python ./c/test_c_model.py --compile`
 
 ## C++
 Execute GoogleTest on the C++ model with `bash ./cpp/run_gtest.sh`
 
 ## SystemC
-TDB.
+TDB

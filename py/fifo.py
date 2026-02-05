@@ -77,4 +77,9 @@ class Fifo:
             raise BufferError(f"FIFO is full. ({DEPTH} words)")
 
 if __name__ == "__main__":
-    print("Python version of FIFO")
+    print("Creating FIFO instance...")
+    fifo_instance = Fifo()
+    fifo_instance.write(51)
+    print(f"Current queue length: {fifo_instance.queue_len}")
+    val = fifo_instance.read()
+    print(f"Read value: {val}")
