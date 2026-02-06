@@ -36,6 +36,9 @@ sudo apt install ~/Downloads/code_latest_amd64.deb`
 ### C/C++ compilers
 GCC and G++ already installed in Debian by default.
 
+### GDB
+`sudo apt install gdb`
+
 ### CMake
 `sudo apt-get install cmake`
 
@@ -88,7 +91,7 @@ Each implementation is parameterizable, with default values:
 * Debian 14.2.0-19
 * VS Code 1.108.1
 * conda 25.11.1
-* MinGW-W64 13.2.0
+* GDB: 16.3
 * Make 4.4.1
 * CMake 3.31.6
 
