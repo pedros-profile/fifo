@@ -57,6 +57,19 @@ bash $INST_SCRIPT
 conda create fifo_venv python=3.12.12
 ```
 
+### Verilator (for SV simulation)
+`sudo apt-get install verilator`
+
+### OPTIONAL: GTKWave (for waveform visualization)
+VS Code has support for VCD files.
+
+`sudo apt-get install gtkwave`
+
+### OPTIONAL: FST lib
+Requires GTKWave. VS Code does not support FST format.
+
+`sudo apt-get update && sudo apt-get install zlib1g-dev`
+
 ## Clone from GitHub
 First make sure you have a way of authenticating from GitHub. Below, the command to clone this repo with an SSH key.
 `git clone --recurse-submodules git@github.com:pedros-profile/fifo.git`
@@ -88,12 +101,14 @@ Each implementation is parameterizable, with default values:
 * C: C17
 * C++: C++17
 * SystemC: 3.0.2
-* Debian 14.2.0-19
+* Debian 13
 * VS Code 1.108.1
 * conda 25.11.1
 * GDB: 16.3
 * Make 4.4.1
 * CMake 3.31.6
+* Verilator 5.032
+* GTKWave v3.3.121
 
 # Execution
 All commands here are assumed to be executed from the repo's root.
