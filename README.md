@@ -7,14 +7,10 @@ The goal here is to document the basic steps when setting up a cross-platform pr
   * C (DONE)
   * C++ (DONE)
   * SystemC (prep...)
-  * SystemVerilog
+  * SystemVerilog (DONE)
 2. Test each implementation with the same rules (ideally, the same test case script)
 3. Check for performance, when applicable.
 4. If possible, add a jenkins/gitlab file.
-
-## To-do list
-* Convert shell scripts to a Make-based solution.
-* Integrate such solution with VSCode through `.vscode/` files.
 
 # Getting started
 
@@ -117,20 +113,28 @@ All commands here are assumed to be executed from the repo's root.
 `python ./py/test_python_model.py`
 
 ## C
-#### Sanity check:
+```
+# Sanity check
+bash ./c/run_sanity_check.sh
 
-`bash ./c/run_sanity_check.sh`
-
-#### Default test:
-
-`python ./c/test_c_model.py`
-
-#### Test forcing a new compilation
-
-`python ./c/test_c_model.py --compile`
+# Default test with CFFI (remove "--compile" if no re-compilation is needed)
+python ./c/test_c_model.py --compile
+```
 
 ## C++
-Execute GoogleTest on the C++ model with `bash ./cpp/run_gtest.sh`
+```
+# Sanity check
+bash ./cpp/run_sanity_check.sh
+
+# Build and run GoogleTest
+bash ./cpp/run_gtest.sh
+```
 
 ## SystemC
 TDB
+
+## SystemVerilog
+```
+# At the end of the execution, it will open the dumped VCD file with GTKWave.
+bash ./sv/run_testbench.sh
+```
