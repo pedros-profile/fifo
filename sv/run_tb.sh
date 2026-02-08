@@ -14,10 +14,10 @@ pushd "$SCRIPT_DIR" >/dev/null
     echo ""
     # For FST, use --trace-fst and change dumpfile in tb_fifo
     verilator --binary -Wall -Wno-DECLFILENAME --timing -sv --trace \
-        "tb_fifo.sv" \
+        "test_under_and_overflow.sv" \
         "fifo.sv" \
         --Mdir "$OUT_DIR/obj" \
-        -o "$OUT_DIR/tb_fifo"
+        -o "$OUT_DIR/test_uf_ov"
 
     echo ""
     echo "-----------------------------------------"
@@ -25,11 +25,16 @@ pushd "$SCRIPT_DIR" >/dev/null
     echo "-----------------------------------------"
     echo ""
     "$OUT_DIR/tb_fifo"
-
+    tb_exit_code=$?
+    echo ""
+    echo "--------------------------------------------"
+    echo "TestBench executed (exit_code=$tb_exit_code)"
+    echo "--------------------------------------------"
     echo ""
     echo "------------------------------------------------------"
     echo "Opening trace file with waveform visualizer GTKWave..."
     echo "------------------------------------------------------"
     echo ""
     gtkwave build/verilator/tb_fifo.vcd &
+    exit "$tb_exit_code"
 popd >/dev/null
