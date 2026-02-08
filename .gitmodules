@@ -4,3 +4,9 @@
 [submodule "systemc"]
 	path = sc/systemc
 	url = git@github.com:accellera-official/systemc.git
+[submodule "sv/yosys"]
+	path = sv/yosys
+	url = https://github.com/YosysHQ/yosys.git
+[submodule "sv/external/yosys"]
+	path = sv/external/yosys
+	url = https://github.com/YosysHQ/yosys.git
