@@ -22,8 +22,8 @@ reg [ADDR_WL-1:0] addr_wr;
 reg [WIDTH-1:0] fifo_mem [0:DEPTH-1];
 
 // next step addresses (if the op happens)
-wire [ADDR_WL-1:0] next_addr_rd = (addr_rd == (DEPTH - 1)) ? 0 : (addr_rd + 1);
-wire [ADDR_WL-1:0] next_addr_wr = (addr_wr == (DEPTH - 1)) ? 0 : (addr_wr + 1);
+wire [ADDR_WL-1:0] next_addr_rd = (addr_rd == $bits(addr_rd)'(DEPTH - 1)) ? 0 : (addr_rd + 1);
+wire [ADDR_WL-1:0] next_addr_wr = (addr_wr == $bits(addr_wr)'(DEPTH - 1)) ? 0 : (addr_wr + 1);
 
 // rin_*: register input
 // read
