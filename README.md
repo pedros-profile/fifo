@@ -135,6 +135,6 @@ TDB
 
 ## SystemVerilog
 ```
-# At the end of the execution, it will open the dumped VCD file with GTKWave.
-bash ./sv/run_testbench.sh
+# Compile and execute the testbench. If it passes, synthesize it. If not, open waveform.
+bash ./sv/run_generic_synthesis.sh
 ```
