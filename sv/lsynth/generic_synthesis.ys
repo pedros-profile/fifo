@@ -2,7 +2,7 @@
 # Complete generic synthesis flow
 
 # 1. Read RTL
-read_verilog -sv ./fifo.sv
+read_verilog -sv ../fifo.sv
 
 # 2. Elaborate hierarchy
 hierarchy -check -top fifo
@@ -32,4 +32,4 @@ show -prefix generic_netlist -format svg
 stat
 
 # 7. Write output
-write_verilog -noattr lsynth/results/generic_netlist.v
+write_verilog -noattr generic_netlist.v

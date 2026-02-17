@@ -25,15 +25,15 @@ pushd "$SCRIPT_DIR" >/dev/null
     echo "-----------------------------------------"
     echo ""
     if "$OUT_DIR/tb_fifo"; then
-        echo ""
-        echo "----------------------------------------------------"
-        echo "TestBench passed. Proceeding with logic synthesys..."
-        echo "----------------------------------------------------"
-        echo ""
         SYNTH_DIR="$SCRIPT_DIR/lsynth"
-        SYNTH_OUT_DIR="$SYNTH_DIR/results"
-        mkdir -p "$SYNTH_OUT_DIR"
-        yosys "$SYNTH_DIR/generic_synthesis.ys" > "$SYNTH_OUT_DIR/generic_synthesis.log"
+        pushd "$SYNTH_DIR" >>/dev/null
+            echo ""
+            echo "----------------------------------------------------"
+            echo "TestBench passed. Proceeding with logic synthesys..."
+            echo "----------------------------------------------------"
+            echo ""
+            yosys generic_synthesis.ys > generic_synthesis.log
+            echo "Generated netlist $SYNTH_DIR/generic_netlist.v"
     else
         tb_exit_code=$?
         echo ""
