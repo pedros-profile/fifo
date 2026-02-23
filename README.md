@@ -27,6 +27,7 @@ git clone --recurse-submodules git@github.com:pedros-profile/fifo.git
 Third-party submodule repositories:
 * [Google Test](https://github.com/google/googletest)
 * [SystemC (at tag 3.0.2)](https://github.com/accellera-official/systemc)
+* [Yosys](https://github.com/YosysHQ/yosys)
 
 ### Visual Code
 ```
@@ -141,3 +142,7 @@ bash ./sv/run_generic_synthesis.sh
 * CMake 3.31.6
 * Verilator 5.032
 * GTKWave v3.3.121
+
+# VS Code extensions
+* [VIm](https://marketplace.visualstudio.com/items?itemName=vscodevim.vim)
+* [Python](https://marketplace.visualstudio.com/items?itemName=ms-python.python)
