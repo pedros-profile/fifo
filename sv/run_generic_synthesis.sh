@@ -27,13 +27,15 @@ pushd "$SCRIPT_DIR" >/dev/null
     if "$OUT_DIR/tb_fifo"; then
         SYNTH_DIR="$SCRIPT_DIR/lsynth"
         pushd "$SYNTH_DIR" >>/dev/null
+            SYNTH_RES="$SYNTH_DIR/results"
+            mkdir -p "$SYNTH_RES"
             echo ""
             echo "----------------------------------------------------"
             echo "TestBench passed. Proceeding with logic synthesys..."
             echo "----------------------------------------------------"
             echo ""
-            yosys generic_synthesis.ys > generic_synthesis.log
-            echo "Generated netlist $SYNTH_DIR/generic_netlist.v"
+            yosys generic_synthesis.ys > "$SYNTH_RES/generic_synthesis.log"
+            echo "Generated netlist $SYNTH_RES/generic_netlist.v"
     else
         tb_exit_code=$?
         echo ""

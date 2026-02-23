@@ -16,8 +16,8 @@ opt_clean
 # https://stackoverflow.com/questions/32645965/fsm-export-using-yosys
 # to export the infered FSM diagram
 # fsm -nomap
-# fsm_export -o fsm.kiss2
-# !python kiss2dot.py fsm.kiss2 > fsm.dot
+# fsm_export -o results/fsm.kiss2
+# !python kiss2dot.py results/fsm.kiss2 > results/fsm.dot
 
 memory        # Handle memories
 
@@ -32,4 +32,5 @@ show -prefix generic_netlist -format svg
 stat
 
 # 7. Write output
-write_verilog -noattr generic_netlist.v
+select t:$*
+write_verilog -noattr results/generic_netlist.v
