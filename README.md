@@ -2,13 +2,14 @@
 This repository has strict educational purposes.
 The goal here is to document the basic steps when setting up a cross-platform project from scratch in a Linux environment. The planned steps are:
 
-1. Implement a simple FIFO memory in different languages:
+1. Implement (and test) a simple FIFO memory in different languages:
   * Python (DONE)
   * C (DONE)
   * C++ (DONE)
   * SystemC (prep...)
   * SystemVerilog (DONE)
-2. Test each implementation with the same rules (ideally, the same test case script)
+      * extra: verifying with cocotb (tbd)
+2. Test each implementation with the same rules
 3. Check for performance, when applicable.
 4. If possible, add a jenkins/gitlab file.
 
