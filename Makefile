@@ -27,11 +27,20 @@ GTEST_MAIN_LIB := $(CPP_BIN)/libgtest_main.a
 GTEST_EXEC := $(CPP_BIN)/gtest_fifo
 SANITY_EXEC := $(CPP_BIN)/sanity_check_fifo
 
+# ===== SV VARIABLES =====
+SV_DIR := $(ROOT)/sv
+SV_BUILD_DIR := $(SV_DIR)/build
+SV_OUT_DIR := $(SV_BUILD_DIR)/verilator
+SV_OBJ_DIR := $(SV_OUT_DIR)/obj
+SV_EXEC := $(SV_OUT_DIR)/tb_fifo
+SV_VCD := $(SV_OUT_DIR)/tb_fifo.vcd
+
 
 .PHONY: all run_sanity_c run_cffi run_python clean clean_c \
- build_gtest run_gtest run_sanity_cpp clean_cpp
+ build_gtest run_gtest run_sanity_cpp clean_cpp run_sv_tb
 
 all: run_sanity_c
+
 
 # *************************************************************************** #
 # 							C IMPLEMENTATION 							      #
@@ -82,6 +91,7 @@ $(C_SO): $(C_SRC) | $(C_BIN)
 clean_c:
 	rm -rf $(C_BIN)
 
+
 # *************************************************************************** #
 # 						  PYTHON IMPLEMENTATION 						      #
 # *************************************************************************** #
@@ -92,6 +102,7 @@ run_python:
 	cd "$(PY_DIR)" && \
 	python3 -m unittest test_python_model.py -v
 	@echo ""
+
 
 # *************************************************************************** #
 # 						  C++ IMPLEMENTATION 							      #
@@ -135,9 +146,46 @@ $(SANITY_EXEC): $(CPP_DIR)/fifo.cpp $(CPP_DIR)/sanity_check_fifo.cpp $(CPP_DIR)/
 clean_cpp:
 	rm -rf $(CPP_BIN)
 
+
+# *************************************************************************** #
+# 						   SYSTEMVERILOG IMPLEMENTATION 					  #
+# *************************************************************************** #
+
+$(SV_OBJ_DIR):
+	mkdir -p $@
+
+$(SV_EXEC): $(SV_DIR)/tb_fifo.sv $(SV_DIR)/fifo.sv | $(SV_OBJ_DIR)
+	@echo "=========================================="
+	@echo "Compiling SV TestBench with Verilator..."
+	@echo "=========================================="
+	verilator --binary -Wall -Wno-DECLFILENAME --timing -sv --trace $^ \
+	 --Mdir $(SV_OBJ_DIR) -o $(SV_EXEC) -DWIDTH=32 -DDEPTH=8 -I$(SV_DIR) \
+	 --top-module tb_fifo -DDUMPFILE=\"$(SV_VCD)\"
+	@echo ""
+
+$(SV_VCD): $(SV_EXEC)
+	@echo "=========================================="
+	@echo "Running SV testbench..."
+	@echo "=========================================="
+	cd $(SV_DIR) && \
+	$(SV_EXEC)
+	@echo ""
+
+run_sv_tb: $(SV_VCD)
+
+view_waveform: $(SV_VCD)
+	@echo "=========================================="
+	@echo "Opening waveform..."
+	@echo "=========================================="
+	gtkwave $(SV_VCD) &
+	@echo ""
+
+clean_sv:
+	rm -rf $(SV_BUILD_DIR)
+
 # *************************************************************************** #
 # 						  			CLEAN   							      #
 # *************************************************************************** #
 
-clean: clean_c clean_cpp
+clean: clean_c clean_cpp clean_sv
 	@:

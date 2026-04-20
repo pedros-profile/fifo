@@ -1,8 +1,23 @@
 `timescale 1ns/1ps
 
+// WIDTH
+`ifndef WIDTH
+`define WIDTH 32
+`endif
+
+// DEPTH
+`ifndef DEPTH
+`define DEPTH 8
+`endif
+
+// VCD DUMPFILE -- only generated if run from <root_dir>/sv!
+`ifndef DUMPFILE
+`define DUMPFILE "build/verilator/tb_fifo.vcd"
+`endif
+
 module tb_fifo;
-    localparam WIDTH = 32;
-    localparam DEPTH = 8;
+    localparam WIDTH = `WIDTH;
+    localparam DEPTH = `DEPTH;
 
     logic clk = 1'b0;
     logic rst_n;
@@ -122,7 +137,7 @@ module tb_fifo;
     initial begin
         int exit_code;
 
-        $dumpfile("build/verilator/tb_fifo.vcd");
+        $dumpfile(`DUMPFILE);
         $dumpvars(0, tb_fifo);
 
         rst_n = 1'b0;
