@@ -12,7 +12,7 @@ import argparse
 
 # Setup CFFI to load C FIFO implementation
 import cffi_load
-ffi, lib = cffi_load.cffi_load(compile=False)
+ffi, lib = cffi_load.cffi_load()
 
 # Project constants
 DEPTH = lib.DEPTH
@@ -148,4 +148,6 @@ if __name__ == "__main__":
                      help="Set unittest verbosity level (default: 0).")
     args = arg_parser.parse_args()
 
+    if args.compile:
+        ffi, lib = cffi_load.cffi_load(compile=True)
     unittest.main(argv=[sys.argv[0]], verbosity=args.verbosity)
