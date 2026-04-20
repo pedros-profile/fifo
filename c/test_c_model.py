@@ -148,6 +148,5 @@ if __name__ == "__main__":
                      help="Set unittest verbosity level (default: 0).")
     args = arg_parser.parse_args()
 
-    if args.compile:
-        ffi, lib = cffi_load.cffi_load(compile=True)
+    ffi, lib = cffi_load.cffi_load()
     unittest.main(argv=[sys.argv[0]], verbosity=args.verbosity)
