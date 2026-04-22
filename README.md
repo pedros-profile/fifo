@@ -9,9 +9,43 @@ The goal here is to document the basic steps when setting up a cross-platform pr
   * SystemC (prep...)
   * SystemVerilog (DONE)
       * extra: verifying with cocotb (tbd)
+      * extra: logic synthesis (tbd)
 2. Test each implementation with the same rules
 3. Check for performance, when applicable.
-4. If possible, add a jenkins/gitlab file.
+
+# Commands
+All executions and cleanups are commanded from the root directory via Make.
+The commands are listed and described below:
+
+### Common commands
+`make all`: Execute detailed tests on all the implementations. Compiles libraries if needed.
+
+`make clean`: Clean up binaries from all implementations.
+
+### C-Implementation related
+`make run_sanity_c`: run a sanity check of the current C implementation. Compiles local libraries if needed.
+
+`make run_cffi`: run CFFI more detailed tests of the current C implementation. Compiles shared object if needed.
+
+`make clean_c`: clean all binaries from C implementation.
+
+### Python
+`make run_python`: run unittest test cases over the current Python implementation.
+
+### C++
+`run_sanity_cpp`: run a sanity check of the current C++ implementation. Compiles local libraries if needed.
+
+`run_gtest`: run Google Test test cases over the current C++ implementation. Compiles GTest and local libraries if needed.
+
+`clean_cpp`: clean all binaries from C++ implementation.
+
+### SystemVerilog
+`run_sv_tb`: run SystemVerilog testbench over the current SystemVerilog implementation and generate a VCD file as output. Compiles the RTL if needed.
+
+`view_waveform`: Visualize the generated VCD on GtkWave. Executes _run_sv_tb_ if no VCD is found.
+
+`clean_sv`: clean all binaries and VCD generated from SV compilation.
+
 
 # Required tools
 
@@ -64,11 +98,14 @@ conda create --name fifo_venv python=3.12.12
 ```
 
 ### Verilator
-`sudo apt-get install verilator`
-
-### OPTIONAL: GTKWave
 ```
-# VS Code has support for VCD files too
+# Verilog/SystemVerilog compiler
+sudo apt-get install verilator
+```
+
+### GTKWave
+```
+# Default tool for waveform visualization (but VS Code has support for VCD files too!)
 sudo apt-get install gtkwave
 ```
 
@@ -95,39 +132,6 @@ Each implementation is parameterizable, with default values:
 * Multi-threading
 * Different clock domains
 * Read/write operations taking more than one clock cycle to be performed
-
-# Execution
-All commands here are assumed to be executed from the repo's root.
-
-## Python
-`python ./py/test_python_model.py`
-
-## C
-```
-# Sanity check
-bash ./c/run_sanity_check.sh
-
-# Default test with CFFI (remove "--compile" if no re-compilation is needed)
-python ./c/test_c_model.py --compile
-```
-
-## C++
-```
-# Sanity check
-bash ./cpp/run_sanity_check.sh
-
-# Build and run GoogleTest
-bash ./cpp/run_gtest.sh
-```
-
-## SystemC
-TDB
-
-## SystemVerilog
-```
-# At the end of the execution, it will open the dumped VCD file with GTKWave.
-bash ./sv/run_testbench.sh
-```
 
 # SW Versions
 * Python: 3.12.12
