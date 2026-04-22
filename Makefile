@@ -20,11 +20,12 @@ SANITY_CXXFLAGS := -O2
 CPP_DIR := $(ROOT)/cpp
 CPP_BIN := $(CPP_DIR)/bin
 GTEST_DIR := $(CPP_DIR)/external/googletest/googletest
-GTEST_OBJ := $(CPP_BIN)/gtest-all.o
-GTEST_MAIN_OBJ := $(CPP_BIN)/gtest_main.o
-GTEST_LIB := $(CPP_BIN)/libgtest.a
-GTEST_MAIN_LIB := $(CPP_BIN)/libgtest_main.a
-GTEST_EXEC := $(CPP_BIN)/gtest_fifo
+GTEST_BIN := $(CPP_DIR)/bin_gtest
+GTEST_OBJ := $(GTEST_BIN)/gtest-all.o
+GTEST_MAIN_OBJ := $(GTEST_BIN)/gtest_main.o
+GTEST_LIB := $(GTEST_BIN)/libgtest.a
+GTEST_MAIN_LIB := $(GTEST_BIN)/libgtest_main.a
+CPP_GTEST_EXEC := $(CPP_BIN)/gtest_fifo
 SANITY_EXEC := $(CPP_BIN)/sanity_check_fifo
 
 # ===== SV VARIABLES =====
@@ -40,9 +41,10 @@ LSYNTH_RES_DIR := $(LSYNTH_DIR)/results
 
 .PHONY: all run_sanity_c run_cffi run_python clean clean_c \
  build_gtest run_gtest run_sanity_cpp clean_cpp run_sv_tb \
- view_waveform generic_synthesis clean_sv
+ view_waveform generic_synthesis clean_sv build_so \
+ bash_generic_synth clean_cpp_all clean_gtest
 
-all: run_cffi run_python run_gtest run_sv_tb
+all: run_cffi run_python run_gtest run_sv_tb generic_synthesis
 
 
 # *************************************************************************** #
@@ -77,16 +79,13 @@ $(C_BIN):
 # CFFI
 run_cffi: $(C_SO)
 	@echo "=========================================="
-	@echo "Running CFFI tests..."
+	@echo "Running C CFFI tests..."
 	@echo "=========================================="
-	cd "$(C_DIR)" && \
-	if !(python3 -m unittest test_c_model.py -v); then \
-		echo "" && \
-		echo "******************"; \
-		echo "CFFI tests failed!"; \
-		echo "******************"; \
-	fi
+	@cd "$(C_DIR)" && \
+	if !(python3 -m unittest test_c_model.py -v); then :; fi
 	@echo ""
+
+build_so: $(C_SO)
 
 $(C_SO): $(C_SRC) | $(C_BIN)
 	@echo "=========================================="
@@ -103,6 +102,7 @@ clean_c:
 # *************************************************************************** #
 # 						  PYTHON IMPLEMENTATION 						      #
 # *************************************************************************** #
+
 run_python:
 	@echo "=========================================="
 	@echo "Running Python tests..."
@@ -121,38 +121,71 @@ build_gtest: $(GTEST_LIB) $(GTEST_MAIN_LIB)
 $(CPP_BIN):
 	mkdir -p $@
 
-$(GTEST_OBJ): $(GTEST_DIR)/src/gtest-all.cc | $(CPP_BIN)
+$(GTEST_BIN):
+	mkdir -p $@
+
+$(GTEST_OBJ): $(GTEST_DIR)/src/gtest-all.cc | $(CPP_BIN) $(GTEST_BIN)
+	@echo "=========================================="
+	@echo "Building GoogleTests library..."
+	@echo "=========================================="
 	$(CXX) $(CXXFLAGS) -I$(GTEST_DIR)/include -I$(GTEST_DIR) -c $< -o $@
 
 $(GTEST_MAIN_OBJ): $(GTEST_DIR)/src/gtest_main.cc | $(CPP_BIN)
+	@echo "=========================================="
+	@echo "Building GoogleTests main library..."
+	@echo "=========================================="
 	$(CXX) $(CXXFLAGS) -I$(GTEST_DIR)/include -I$(GTEST_DIR) -c $< -o $@
+	@echo ""
 
 $(GTEST_LIB): $(GTEST_OBJ)
+	@echo "=========================================="
+	@echo "Archiving GoogleTests library..."
+	@echo "=========================================="
 	$(AR) $@ $^
+	@echo ""
 
 $(GTEST_MAIN_LIB): $(GTEST_MAIN_OBJ)
+	@echo "=========================================="
+	@echo "Archiving GoogleTests main library..."
+	@echo "=========================================="
 	$(AR) $@ $^
+	@echo ""
 
-run_gtest: $(GTEST_EXEC)
+run_gtest: $(CPP_GTEST_EXEC)
 	@echo "=========================================="
-	@echo "Running tests..."
+	@echo "Running C++ tests..."
 	@echo "=========================================="
-	$(GTEST_EXEC)
+	$(CPP_GTEST_EXEC)
+	@echo ""
 
-$(GTEST_EXEC): $(CPP_DIR)/gtest_fifo.cpp $(CPP_DIR)/fifo.h $(GTEST_LIB) $(GTEST_MAIN_LIB) | $(CPP_BIN)
-	$(CXX) $(CXXFLAGS) -I$(GTEST_DIR)/include -I$(CPP_DIR) $< -L$(CPP_BIN) -lgtest -lgtest_main -o $@
+$(CPP_GTEST_EXEC): $(CPP_DIR)/gtest_fifo.cpp $(CPP_DIR)/fifo.h $(GTEST_LIB) $(GTEST_MAIN_LIB) | $(CPP_BIN)
+	@echo "=========================================="
+	@echo " Building C++ tests with GoogleTests..."
+	@echo "=========================================="
+	$(CXX) $(CXXFLAGS) -I$(GTEST_DIR)/include -I$(CPP_DIR) $< -L$(CPP_BIN) -L$(GTEST_BIN) -lgtest -lgtest_main -o $@
+	@echo ""
 
 run_sanity_cpp: $(SANITY_EXEC)
-	@echo "-----------------------"
-	@echo "Running sanity check..."
-	@echo "-----------------------"
+	@echo "=========================================="
+	@echo "Running C++ sanity check..."
+	@echo "=========================================="
 	$(SANITY_EXEC)
+	@echo ""
 
 $(SANITY_EXEC): $(CPP_DIR)/fifo.cpp $(CPP_DIR)/sanity_check_fifo.cpp $(CPP_DIR)/fifo.h | $(CPP_BIN)
+	@echo "=========================================="
+	@echo "Building C++ sanity check..."
+	@echo "=========================================="
 	$(CXX) $(SANITY_CXXFLAGS) $(CPP_DIR)/fifo.cpp $(CPP_DIR)/sanity_check_fifo.cpp -o $@
+	@echo ""
 
 clean_cpp:
 	rm -rf $(CPP_BIN)
+
+clean_gtest:
+	rm -rf $(GTEST_BIN)
+
+clean_cpp_all: clean_cpp clean_gtest
 
 
 # *************************************************************************** #
@@ -161,6 +194,8 @@ clean_cpp:
 
 $(SV_OBJ_DIR):
 	mkdir -p $@
+
+run_sv_tb: $(SV_VCD)
 
 $(SV_EXEC): $(SV_DIR)/tb_fifo.sv $(SV_DIR)/fifo.sv | $(SV_OBJ_DIR)
 	@echo "=========================================="
@@ -179,8 +214,6 @@ $(SV_VCD): $(SV_EXEC)
 	$(SV_EXEC)
 	@echo ""
 
-run_sv_tb: $(SV_VCD)
-
 view_waveform: $(SV_VCD)
 	@echo "=========================================="
 	@echo "Opening waveform..."
@@ -188,21 +221,26 @@ view_waveform: $(SV_VCD)
 	gtkwave $(SV_VCD) &
 	@echo ""
 
-generic_synthesis: $(SV_EXEC)
+$(LSYNTH_RES_DIR)/generic_netlist.v: $(SV_EXEC)
 	@echo "=========================================="
 	@echo "Executing generic synthesis..."
 	@echo "=========================================="
 	mkdir -p $(LSYNTH_RES_DIR)
 	cd $(LSYNTH_DIR) && \
-    yosys generic_synthesis.ys > $(LSYNTH_RES_DIR)/generic_synthesis.log && \
-    echo "Generated netlist $(LSYNTH_RES_DIR)/generic_netlist.v"
+    yosys generic_synthesis.ys > $(LSYNTH_RES_DIR)/generic_synthesis.log
+	@echo "Generated netlist $(LSYNTH_RES_DIR)/generic_netlist.v"
+	@echo ""
+
+generic_synthesis: $(LSYNTH_RES_DIR)/generic_netlist.v
 
 bash_generic_synth:
 	bash sv/run_generic_synthesis.sh
+	@echo ""
 
 clean_sv:
 	rm -rf $(SV_BUILD_DIR)
 	rm -rf $(LSYNTH_RES_DIR)
+
 
 # *************************************************************************** #
 # 						  			CLEAN   							      #
