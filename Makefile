@@ -39,7 +39,7 @@ SV_VCD := $(SV_OUT_DIR)/tb_fifo.vcd
 .PHONY: all run_sanity_c run_cffi run_python clean clean_c \
  build_gtest run_gtest run_sanity_cpp clean_cpp run_sv_tb
 
-all: run_sanity_c
+all: run_cffi run_python run_gtest run_sv_tb
 
 
 # *************************************************************************** #
@@ -77,7 +77,12 @@ run_cffi: $(C_SO)
 	@echo "Running CFFI tests..."
 	@echo "=========================================="
 	cd "$(C_DIR)" && \
-	python3 -m unittest test_c_model.py -v
+	if !(python3 -m unittest test_c_model.py -v); then \
+		echo "" && \
+		echo "******************"; \
+		echo "CFFI tests failed!"; \
+		echo "******************"; \
+	fi
 	@echo ""
 
 $(C_SO): $(C_SRC) | $(C_BIN)
