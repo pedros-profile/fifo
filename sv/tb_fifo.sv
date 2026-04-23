@@ -159,10 +159,10 @@ module tb_fifo;
         $display("o_data=%0h o_empty=%0b o_full=%0b o_new_output=%0b", o_data, o_empty, o_full, o_new_output);
         if (error_count == 0) begin
             $display("TB PASS");
-            exit_code = 1;
+            exit_code = 0;
         end else begin
             $display("TB FAIL: %0d error(s)", error_count);
-            exit_code = -error_count;
+            exit_code = error_count;
         end
         $display("TB exit_code=%0d", exit_code);
         $finish(exit_code);

@@ -34,10 +34,13 @@ SV_OUT_DIR := $(SV_BUILD_DIR)/verilator
 SV_OBJ_DIR := $(SV_OUT_DIR)/obj
 SV_EXEC := $(SV_OUT_DIR)/tb_fifo
 SV_VCD := $(SV_OUT_DIR)/tb_fifo.vcd
+LSYNTH_DIR := $(SV_DIR)/lsynth
+LSYNTH_RES_DIR := $(LSYNTH_DIR)/results
 
 
 .PHONY: all run_sanity_c run_cffi run_python clean clean_c \
- build_gtest run_gtest run_sanity_cpp clean_cpp run_sv_tb
+ build_gtest run_gtest run_sanity_cpp clean_cpp run_sv_tb \
+ view_waveform generic_synthesis clean_sv
 
 all: run_cffi run_python run_gtest run_sv_tb
 
@@ -185,8 +188,21 @@ view_waveform: $(SV_VCD)
 	gtkwave $(SV_VCD) &
 	@echo ""
 
+generic_synthesis: $(SV_EXEC)
+	@echo "=========================================="
+	@echo "Executing generic synthesis..."
+	@echo "=========================================="
+	mkdir -p $(LSYNTH_RES_DIR)
+	cd $(LSYNTH_DIR) && \
+    yosys generic_synthesis.ys > $(LSYNTH_RES_DIR)/generic_synthesis.log && \
+    echo "Generated netlist $(LSYNTH_RES_DIR)/generic_netlist.v"
+
+bash_generic_synth:
+	bash sv/run_generic_synthesis.sh
+
 clean_sv:
 	rm -rf $(SV_BUILD_DIR)
+	rm -rf $(LSYNTH_RES_DIR)
 
 # *************************************************************************** #
 # 						  			CLEAN   							      #

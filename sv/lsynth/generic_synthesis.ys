@@ -1,0 +1,36 @@
+# synthesis.ys
+# Complete generic synthesis flow
+
+# 1. Read RTL
+read_verilog -sv ../fifo.sv
+
+# 2. Elaborate hierarchy
+hierarchy -check -top fifo
+
+# 3. High-level synthesis
+proc          # Convert behavioral to structural
+fsm           # Optimize FSMs
+opt_clean
+
+# Add the Python script from 
+# https://stackoverflow.com/questions/32645965/fsm-export-using-yosys
+# to export the infered FSM diagram
+# fsm -nomap
+# fsm_export -o results/fsm.kiss2
+# !python kiss2dot.py results/fsm.kiss2 > results/fsm.dot
+
+memory        # Handle memories
+
+# 4. Optimize
+opt           # First optimization pass
+opt           # Second pass (often finds more)
+
+# 5. Generate visual output
+# show -prefix generic_netlist -format svg
+
+# 6. Statistics
+stat
+
+# 7. Write output
+select t:$*
+write_verilog -noattr results/generic_netlist.v
