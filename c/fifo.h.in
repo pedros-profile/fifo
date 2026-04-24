@@ -1,4 +1,6 @@
-#define DEPTH 8
+// Definition of WIDTH and DEPTH can be overridden by pre-processing the header file with cffi_load.py
+#define DEPTH 32
+#define WIDTH 8
 
 typedef enum FifoStatus {
     EMPTY,

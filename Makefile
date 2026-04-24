@@ -1,5 +1,7 @@
 # ===== SHARED VARIABLES =====
 ROOT := $(abspath $(dir $(realpath $(lastword $(MAKEFILE_LIST)))))
+WIDTH?=32
+DEPTH?=8
 
 # ===== C VARIABLES =====
 CC := gcc
@@ -87,7 +89,7 @@ run_cffi: $(C_SO)
 
 build_so: $(C_SO)
 
-$(C_SO): $(C_SRC) | $(C_BIN)
+$(C_SO): $(C_SRC) $(C_DIR)/fifo.h | $(C_BIN)
 	@echo "=========================================="
 	@echo "Building CFFI library..."
 	@echo "=========================================="
@@ -95,8 +97,18 @@ $(C_SO): $(C_SRC) | $(C_BIN)
 	@echo "CFFI library $@ built successfully!"
 	@echo ""
 
+$(C_DIR)/fifo.h:
+	@echo "=========================================="
+	@echo "Generating fifo.h with WIDTH=$(WIDTH) and DEPTH=$(DEPTH)..."
+	@echo "=========================================="
+	python3 "$(C_DIR)/cffi_load.py" "$(C_DIR)/fifo.h.in" "$(C_DIR)/fifo.h" WIDTH=$(WIDTH) DEPTH=$(DEPTH)
+	@echo ""
+
+cffi_cdef: $(C_DIR)/fifo.h
+
 clean_c:
 	rm -rf $(C_BIN)
+	rm -f $(C_DIR)/fifo.h
 
 
 # *************************************************************************** #
